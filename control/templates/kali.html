@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Kalibrierung der Sensoren</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        form {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 20px;
+        }
+
+        input[type="text"], input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box; /* Fügt die Breite der Border zum Box-Modell hinzu */
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .kalibrierungs-button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            text-decoration: none; /* Entfernt die Unterstreichung */
+            color: white; /* Schriftfarbe */
+            background-color: #008cba; /* Hintergrundfarbe */
+            border-radius: 4px; /* Abgerundete Ecken */
+            border: none; /* Entfernt den Rand */
+            font-weight: bold; /* Macht den Text fett */
+            cursor: pointer; /* Zeigt den Cursor als Hand, um anzudeuten, dass es klickbar ist */
+        }
+
+        .kalibrierungs-button:hover {
+            background-color: #007bb5; /* Dunklere Hintergrundfarbe beim Darüberfahren */
+        }
+    </style>
+</head>
+<body>
+    <h1>Kalibrierung der Sensoren</h1>
+    <br><br>
+    <a href="/" class="kalibrierungs-button">Dashboard</a>
+    <br><br>
+    <h2>PH-Kalibrierung</h2>
+    <form method="POST" action="{% url 'save_ph_calibration' %}">
+        {% csrf_token %}
+        <p>pH V-Wert: <span id="ph_v">{{ latest_data.ph_v }} </span></p>
+        
+        <p>Aktueller pH4 Wert: {{ latest_ph_cali.ph4 }}, pH</p>
+        <label for="ph4">pH 4.0 Wert:</label>
+        <input type="text" id="ph4" name="ph4" step="0.01" required>
+        <br><br>
+        <p>Aktueller pH7 Wert: {{ latest_ph_cali.ph7 }}, pH</p>
+        <label for="ph7">pH 7.0 Wert:</label>
+        <input type="text" id="ph7" name="ph7" step="0.01" required>
+        <br><br>
+        <p>Aktueller pH9 Wert: {{ latest_ph_cali.ph9 }}, pH</p>
+        <label for="ph9">pH 9.0 Wert:</label>
+        <input type="text" id="ph9" name="ph9" step="0.01" required>
+        <br><br>
+        <input type="submit" value="Speichern">
+    </form>
+
+    <h2>EC-Kalibrierung</h2>
+    <form method="POST" action="{% url 'save_ec_calibration' %}">
+        {% csrf_token %}
+        <p>EC V-Wert: <span id="ec_v">{{ latest_data.ec_v }} </span></p>
+        
+        <p>Aktueller 1.413 mS/cm Wert: {{ latest_ec_cali.ec1 }}, mS/cm</p>
+        <label for="ec1"> 1.413 mS/cm Wert:</label>
+        <input type="text" id="ec1" name="ec1" step="0.01" required>
+        <br><br>
+        <p>Aktueller 8.5 mS/cm Wert: {{ latest_ec_cali.ec5 }}, mS/cm</p>
+        <label for="ec5"> 8.5 mS/cm Wert:</label>
+        <input type="text" id="ec5" name="ec5" step="0.01" required>
+        <br><br>
+        <p>Aktueller 12.88 mS/cm Wert: {{ latest_ec_cali.ec12 }}, mS/cm</p>
+        <label for="ec12">12.88 mS/cm Wert:</label>
+        <input type="text" id="ec12" name="ec12" step="0.01" required>
+        <br><br>
+        <input type="submit" value="Speichern">
+    </form>
+
+    <script>
+        function fetchKalibData() {
+            $.ajax({
+                url: '/latest-sensor-data/', // Angepasster Pfad zur neuen Django-View
+                success: function(latest_raw_data) {
+                    $('#ph_v').text(latest_raw_data.ph_voltage);
+                    $('#ec_v').text(latest_raw_data.ec_voltage);
+                    
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            setInterval(fetchKalibData, 2000); // Aktualisiere alle 2 Sekunden
+        });
+    </script>
+</body>
+</html>
+
+

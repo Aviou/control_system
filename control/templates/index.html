@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Automatisiertes Düngersystem</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            width: 100%;
+            text-align: center;
+            color: #333;
+        }
+
+        div, form {
+            flex: 1;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="number"], input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #008cba;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #007bb5;
+        }
+
+        a img {
+            text-size-adjust: 10px;
+            border-radius: 100%;
+        }
+
+        canvas {
+            width: 100%; /* Sorgt dafür, dass der Graph die volle Breite seines Containers einnimmt */
+            height: auto; /* Optional: Anpassung der Höhe, behält das Seitenverhältnis bei height: auto; */
+        }
+
+
+        .kalibrierungs-button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            text-decoration: none; /* Entfernt die Unterstreichung */
+            color: white; /* Schriftfarbe */
+            background-color: #008cba; /* Hintergrundfarbe */
+            border-radius: 4px; /* Abgerundete Ecken */
+            border: none; /* Entfernt den Rand */
+            font-weight: bold; /* Macht den Text fett */
+            cursor: pointer; /* Zeigt den Cursor als Hand, um anzudeuten, dass es klickbar ist */
+        }
+
+        .kalibrierungs-button:hover {
+            background-color: #007bb5; /* Dunklere Hintergrundfarbe beim Darüberfahren */
+        }
+
+        .camera-stream {
+            width: 80%;
+            max-width: 640px;
+            border: 3px solid #333;
+            border-radius: 8px;
+            margin: 20px auto;
+            display: block;
+        }
+        
+
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Dashboard</h1>
+    <div class="container">
+        <div>
+            <h1>Indoor Sensor </h1>
+            <br><br>
+            <label for="ph-value">Messwerte:</label>
+            <p>PH-Wert: <span id="ph-value">Lade...</span> pH</p>
+            <p>EC-Wert: <span id="ec-value">Lade...</span> mS/cm</p>
+            <p>Wassertemperatur: <span id="water-temp">Lade...</span> °C</p>
+            <p>Waterlevel: <span id="Volume">Lade...</span></p>
+            <p>Waterflow: <span id="waterflow">Lade...</span>l/min</p>
+            <p>Ziel Humidity: <span id="target-humid">Lade...</span>%</p>
+            <p>Temperatur 1: <span id="temperature_1">Lade...</span> °C</p>
+            <p>Humidity 1: <span id="humidity_1">Lade...</span> %</p>
+            <p>Pressure 1: <span id="pressure_1">Lade...</span> Pa</p>
+            <p>Wassertemperatur 1: <span id="water_temp_1">Lade...</span> °C</p>
+            <p>Soil Moisture 1: <span id="soil-moisture1">Lade...</span> %</p>
+            <p>Temperatur 2: <span id="temperature_2">Lade...</span> °C</p>
+            <p>Humidity 2: <span id="humidity_2">Lade...</span> %</p>
+            <p>Pressure 2: <span id="pressure_2">Lade...</span> Pa</p>
+            <p>Wassertemperatur 2: <span id="water_temp_2">Lade...</span> °C</p>
+            <p>Soil Moisture 2: <span id="soil-moisture2">Lade...</span> %</p>
+            <h1>Outdoor Sensor</h1>
+            <label for="temperature_01">Pflanze 1:</label>
+            <p>Temperatur 01: <span id="temperature_01">Lade...</span> °C</p>
+            <p>Humidity 01: <span id="humidity_01">Lade...</span> %</p>
+            <p>Moisture 01: <span id="moisture01">Lade...</span> %</p>
+            <p>Soil Temp 01: <span id="soil_temp01">Lade...</span> °C</p>
+            <label for="temperature_1">Pflanze 2:</label>
+            <p>Temperatur 02: <span id="temperature_02">Lade...</span> °C</p>
+            <p>Humidity 02: <span id="humidity_02">Lade...</span> %</p>
+            <p>Moisture 02: <span id="moisture02">Lade...</span> %</p>
+            <p>Soil Temp 02: <span id="soil_temp02">Lade...</span> °C</p>
+            <label for="temperature_1">Pflanze 3:</label>
+            <p>Temperatur 03: <span id="temperature_03">Lade...</span> °C</p>
+            <p>Humidity 03: <span id="humidity_03">Lade...</span> %</p>
+            <p>Moisture 03: <span id="moisture03">Lade...</span> %</p>
+            <p>Soil Temp 03: <span id="soil_temp03">Lade...</span> °C</p>
+
+            <form method="post" action="{% url 'water_plants' %}">
+                {% csrf_token %}
+                <div>
+                    <label for="phase">Phase</label>
+                    <select name="phase" id="phase">
+                        <option value="keimung" {% if form.phase.value == "keimung" %}selected{% endif %}>Keimungsphase</option>
+                        <option value="wachstum" {% if form.phase.value == "wachstum" %}selected{% endif %}>Wachstumsphase</option>
+                        <option value="bluete" {% if form.phase.value == "bluete" %}selected{% endif %}>Blütephase</option>
+                    </select>
+                </div>
+                <input type="submit" value="Speichern">
+            </form>
+
+            {% if task_id %}
+                <p>Task ID: {{ task_id }}</p>
+            {% endif %}
+
+            <br><br>
+            <a href="kali" class="kalibrierungs-button">Kalibrierung</a>
+            <a href="grenzwerte" class="kalibrierungs-button">Grenzwerte</a>
+            <a href="timer" class="kalibrierungs-button">Timer</a>
+            <br><br>
+            <div>
+                <select id="timeSpanSelect">
+                    <option value="day">1 Tag</option>
+                    <option value="week">1 Woche</option>
+                    <option value="month">1 Monat</option>
+                    <option value="year">1 Jahr</option>
+                </select>
+                <canvas id='sensorChart1' style="width:100%;max-width:700px"></canvas>
+                <canvas id='sensorChart2' style="width:100%;max-width:700px"></canvas>
+                <canvas id='sensorChart3' style="width:100%;max-width:700px"></canvas>
+            </div>
+            
+            
+            
+            
+        </div>
+
+        <div>
+            <h1>Zielwerte</h1>
+            <form method="POST" action="{% url 'process_data_ph' %}">
+                {% csrf_token %}
+                <p>Ziel PH-Wert: {{ target_ph.target_ph }} pH</p>  
+                <label for="target-ph">Ziel PH-Wert:</label>
+                <input type="number" id="target-ph" name="target_ph" step="0.1" required><br><br>
+                
+                <p>Ziel Pumpzeit: {{ target_ph.pump_time_ph }}s</p>
+                <label for="pump-time-ph">Pumpzeit:</label>
+                <input type="number" step="0.0001" id="pump-time-ph" name="pump_time_ph"><br><br>
+
+                <input type="submit" value="Speichern">
+            </form>
+            
+            <form method="POST" action="{% url 'process_data_ec' %}">
+                {% csrf_token %}
+               
+                <p>Ziel EC-Wert: {{ target_ec.target_ec }} mS/cm</p>
+                <label for="target-ec">Ziel EC-Wert:</label>
+                <input type="number" id="target-ec" name="target_ec" step="0.1" required><br><br>
+                
+                <input type="submit" value="Speichern">
+            </form>
+
+            <form method="POST" action="{% url 'process_data_ratio' %}">
+                {% csrf_token %}
+               
+                <p>Ziel Natrium-Wert: {{ target_ratio.n_ratio }} ml/l</p>
+                <label for="n-ratio">N-Verhältnis:</label>
+                <input type="number" id="n-ratio" name="n_ratio" step="0.1" required><br><br>
+        
+                <p>Ziel Phosphor-Wert: {{ target_ratio.p_ratio }} ml/l</p>
+                <label for="p-ratio">P-Verhältnis:</label>
+                <input type="number" id="p-ratio" name="p_ratio" step="0.1" required><br><br>
+        
+                <p>Ziel Kalium-Wert: {{ target_ratio.k_ratio }} ml/l</p>
+                <label for="k-ratio">K-Verhältnis:</label>
+                <input type="number" id="k-ratio" name="k_ratio" step="0.1" required><br><br>
+
+                <p>Ziel Pumpzeit: {{ target_ratio.pump_time_ratio }}s</p>
+                <label for="pump-time-ratio">Pumpzeit:</label>
+                <input type="number" id="pump-time-ratio" name="pump_time_ratio"><br><br>
+                
+                <input type="submit" value="Speichern">
+            </form>
+
+            <form method="POST" action="{% url 'process_data_wt' %}">
+                {% csrf_token %}
+            <p>Ziel Wassertemperatur: {{ target_wt.target_water_temp }} °C</p>
+            <label for="target-water-temp">Ziel Wassertemperatur:</label>
+            <input type="number" id="target-water-temp" name="target_water_temp" step="0.5" required><br><br>
+
+            <input type="submit" value="Speichern">
+            </form>
+
+            <form method="POST" action="{% url 'process_data_temp' %}">
+                {% csrf_token %}
+            <p>Ziel Temperatur: {{ target_temp.target_temperature }} °C</p>
+            <label for="target-temperature">Ziel Temperatur:</label>
+            <input type="number" id="target-temperature" name="target_temperature" step="0.5" required><br><br>
+
+            <input type="submit" value="Speichern">
+            </form>
+
+                </div>
+    <div class="container">    
+        <h1>Live Stream</h1>
+        <img src="http://169.254.67.150/axis-cgi/mjpg/video.cgi" alt="Live Stream der Kamera" class=""camera-stream">
+        </body>
+    </div>
+    
+
+
+<script>
+  function fetchLatestSensorData() {
+            $.ajax({
+                url: '/latest-sensor-data/', // Angepasster Pfad zur neuen Django-View
+                success: function(response) {
+                    $('#ph-value').text(response.ph);
+                    $('#ec-value').text(response.ec);
+                    $('#water-temp').text(response.water_temp);
+                    $('#temperature_1').text(response.temperature1);
+                    $('#humidity_1').text(response.humidity1);
+                    $('#pressure_1').text(response.pressure1);
+                    $('#pressure_2').text(response.pressure2);
+                    $('#water_temp_1').text(response.waterTemp1);
+                    $('#temperature_2').text(response.temperature2);
+                    $('#humidity_2').text(response.humidity2);
+                    $('#water_temp_2').text(response.waterTemp2);
+                    $('#soil-moisture1').text(response.soilMoisture1);
+                    $('#soil-moisture2').text(response.soilMoisture2);
+                    $('#Volume').text(response.volume);
+                    $('#waterflow').text(response.flowRate);
+                    $('#temperature_01').text(response.temperature01);
+                    $('#humidity_01').text(response.humidity01);
+                    $('#temperature_02').text(response.temperature02);
+                    $('#humidity_02').text(response.humidity02);
+                    $('#temperature_03').text(response.temperature03);
+                    $('#humidity_03').text(response.humidity03);
+                    $('#moisture01').text(response.moisture01);
+                    $('#moisture02').text(response.moisture02);
+                    $('#moisture03').text(response.moisture03);
+                    $('#soil_temp01').text(response.soil_temp01);
+                    $('#soil_temp02').text(response.soil_temp02);
+                    $('#soil_temp03').text(response.soil_temp03);
+                    $('#target-humid').text(response.target_humidity);
+                }
+            });
+        }
+
+
+    $(document).ready(function() {
+        setInterval(fetchLatestSensorData, 2000); // Aktualisiere alle 2 Sekunden
+    });
+</script>
+
+<script>
+    var charts = {};
+    
+    $(document).ready(function() {
+        fetchDataAndDrawCharts();
+        $('#timeSpanSelect').change(fetchDataAndDrawCharts); 
+        setInterval(fetchDataAndDrawCharts, 10000); // 10 Sekunden
+    });
+    
+    function fetchDataAndDrawCharts() {
+        var timeSpan = $('#timeSpanSelect').val();
+        fetchSensorDataAndDrawChart(timeSpan, 'sensorChart1', 'data'); // Angenommen, 'data' ist Ihr Datenobjekt für das erste Diagramm
+        fetchSensorDataAndDrawChart(timeSpan, 'sensorChart2', 'data1'); // Angenommen, 'data1' ist Ihr Datenobjekt für das zweite Diagramm
+        fetchSensorDataAndDrawChart(timeSpan, 'sensorChart3', 'data1');
+    }
+    
+    function fetchSensorDataAndDrawChart(timeSpan, canvasId, dataKey) {
+        $.ajax({
+            url: '/sensor-data-range/',
+            method: 'GET',
+            data: {'time_span': timeSpan},
+            dataType: 'json',
+            success: function(response) {
+                let data = response[dataKey];
+                if(data) {
+                    drawChart(canvasId, data);
+                } else {
+                    console.error("Keine Daten gefunden für", dataKey);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Fehler beim Abrufen von Sensordaten:", status, error);
+            }
+        });
+    }
+    
+    function drawChart(canvasId, data) {
+        var ctx = document.getElementById(canvasId).getContext('2d');
+        if (charts[canvasId]) {
+        charts[canvasId].destroy();
+    }
+        var datasets;
+        if (canvasId === 'sensorChart1') {
+            datasets = [
+                {
+                    label: 'PH-Wert',
+                    data: data.map(data => data.ph),
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    fill: false
+                },
+                {
+                    label: 'EC-Wert',
+                    data: data.map(data => data.ec),
+                    borderColor: 'rgb(54, 162, 235)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    fill: false
+                },
+                {
+                    label: 'Wassertemperatur',
+                    data: data.map(data => data.water_temp),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    fill: false
+                }
+            ];
+        } else if (canvasId === 'sensorChart2') {
+            datasets = [
+                {
+                    label: 'Temp1',
+                    data: data.map(data => data.temperature1),
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    fill: false
+                },
+                {
+                    label: 'Humd1',
+                    data: data.map(data => data.humidity1),
+                    borderColor: 'rgb(54, 162, 235)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    fill: false
+                },
+                {
+                    label: 'WatTemp1',
+                    data: data.map(data => data.waterTemp1),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    fill: false
+                }
+            ];
+        } else if (canvasId === 'sensorChart3' ) {
+            datasets = [
+                {
+                    label: 'Temp2',
+                    data: data.map(data => data.temperature2),
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    fill: false
+                },
+                {
+                    label: 'Humd2',
+                    data: data.map(data => data.humidity2),
+                    borderColor: 'rgb(54, 162, 235)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    fill: false
+                },
+                {
+                    label: 'WatTemp2',
+                    data: data.map(data => data.waterTemp2),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    fill: false
+                }
+            ];
+        }
+
+        charts[canvasId] = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(data => new Date(data.timestamp).toLocaleDateString()), 
+                datasets: datasets
+            },
+                options: {
+                    
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    responsive: false,
+                    maintainAspectRatio: false
+                }
+            });
+        console.log('Diagramm sollte gerendert werden', canvasId);
+        }
+
+</script>
+
+</body>
+</html>

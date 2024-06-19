@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Automatisiertes Düngersystem</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            width: 100%;
+            text-align: center;
+            color: #333;
+        }
+
+        div, form {
+            flex: 1;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="number"], input[type="submit"] {
+            width: 90%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #008cba;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #007bb5;
+        }
+
+        a img {
+            text-size-adjust: 10px;
+            border-radius: 100%;
+        }
+
+
+        .kalibrierungs-button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            text-decoration: none; /* Entfernt die Unterstreichung */
+            color: white; /* Schriftfarbe */
+            background-color: #008cba; /* Hintergrundfarbe */
+            border-radius: 4px; /* Abgerundete Ecken */
+            border: none; /* Entfernt den Rand */
+            font-weight: bold; /* Macht den Text fett */
+            cursor: pointer; /* Zeigt den Cursor als Hand, um anzudeuten, dass es klickbar ist */
+        }
+
+        .kalibrierungs-button:hover {
+            background-color: #007bb5; /* Dunklere Hintergrundfarbe beim Darüberfahren */
+        }
+
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Grenzwerte</h1>
+    <a href="/" class="kalibrierungs-button">Dashboard</a>
+    <br><br>
+    <div class="container">
+        <form method="POST" action="{% url 'submit_ph_grenze' %}">
+            {% csrf_token %}
+            <p>Ph-Min: {{ latest_grenzwerte_ph.ph_min }} pH</p>  
+            <label for="ph_min">Ph-Min:</label>
+            <input type="number" id="ph_min" name="ph_min" step="0.1" required><br><br>
+            
+            <p>Ziel Ph-Max: {{ latest_grenzwerte_ph.ph_max }} pH</p>
+            <label for="ph_max">Ph-Max:</label>
+            <input type="number" id="ph_max" name="ph_max"><br><br>
+
+            <input type="submit" value="Speichern">
+        </form>
+        
+        <form method="POST" action="{% url 'submit_ec_grenze' %}">
+            {% csrf_token %}
+           
+            <p>Ec-Min: {{ latest_grenzwerte_ec.ec_min }} mS/cm</p>
+            <label for="ec_min">Ec-Min:</label>
+            <input type="number" id="ec_min" name="ec_min" step="0.1" required><br><br>
+
+            <p>Ec-Max: {{ latest_grenzwerte_ec.ec_max }} mS/cm</p>
+            <label for="ec_max">Ec-Max:</label>
+            <input type="number" id="ec_max" name="ec_max" step="0.1" required><br><br>
+            
+            <input type="submit" value="Speichern">
+        </form>
+
+        <form method="POST" action="{% url 'submit_temp_grenze' %}">
+            {% csrf_token %}
+           
+            <p>Temp-Min: {{ latest_grenzwerte_temp.temp_min }} °C</p>
+            <label for="temp_min">Temp-Min:</label>
+            <input type="number" id="temp_min" name="temp_min" step="0.1" required><br><br>
+
+            <p>Temp-Max: {{ latest_grenzwerte_temp.temp_min }} °C</p>
+            <label for="temp_max">Temp-Max:</label>
+            <input type="number" id="temp_max" name="temp_max" step="0.1" required><br><br>
+            
+            <input type="submit" value="Speichern">
+        </form>
+
+        <form method="POST" action="{% url 'submit_humd_grenze' %}">
+            {% csrf_token %}
+           
+            <p>Humd-Min: {{ latest_grenzwerte_humd.humd_min }} %</p>
+            <label for="humd_min">Ziel Humd-Min:</label>
+            <input type="number" id="humd_min" name="humd_min" step="0.1" required><br><br>
+
+            <p>Humd-Max: {{ latest_grenzwerte_humd.humd_max }} %</p>
+            <label for="humd_max">Ziel Humd-Max:</label>
+            <input type="number" id="humd_max" name="humd_max" step="0.1" required><br><br>
+            
+            <input type="submit" value="Speichern">
+        </form>
+
+        <form method="POST" action="{% url 'submit_wt_grenze' %}">
+            {% csrf_token %}
+           
+            <p>Water-Temp-Min: {{ latest_grenzwerte_wt.temp_wt_min }} °C</p>
+            <label for="temp_wt_min">Ziel Water-Temp-Min:</label>
+            <input type="number" id="temp_wt_min" name="temp_wt_min" step="0.1" required><br><br>
+
+            <p>Water-Temp-Max: {{ latest_grenzwerte_wt.temp_wt_max }} °C</p>
+            <label for="temp_wt_max">Ziel Water-Temp-Max:</label>
+            <input type="number" id="temp_wt_max" name="temp_wt_max" step="0.1" required><br><br>
+            
+            <input type="submit" value="Speichern">
+        </form>
+
+        <form method="POST" action="{% url 'submit_gas_grenze' %}">
+            {% csrf_token %}
+           
+            <p>Gas-Grenzwert: {{ latest_grenzwerte_gas.gas_grenzwert }}</p>
+            <label for="gas_grenzwert">Ziel Gas-Grenzwert:</label>
+            <input type="number" id="gas_grenzwert" name="gas_grenzwert" step="0.1" required><br><br>
+            <br><br>
+            <br><br>
+            <br><br>
+            <br><br>
+            <input type="submit" value="Speichern">
+        </form>
+
+        <form method="POST" action="{% url 'submit_waterflow_grenze' %}">
+            {% csrf_token %}
+           
+            <p>Waterflow-Grenzwert: {{ latest_grenzwerte_waterflow.waterflow_grenzwert }}</p>
+            <label for="waterflow_grenzwert">Ziel Waterflow-Grenzwert:</label>
+            <input type="number" id="waterflow_grenzwert" name="waterflow_grenzwert" step="0.1" required><br><br>
+            <br><br>
+            <br><br>
+            <br><br>
+            <br><br>
+            <input type="submit" value="Speichern">
+        </form>
+
+            </div>
+
+        
+
+    
+                                      
+<script>
+    function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+</script>
+</body>
+</html>
